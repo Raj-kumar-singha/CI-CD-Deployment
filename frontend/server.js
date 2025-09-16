@@ -23,7 +23,7 @@ app.post("/submit", async (req, res) => {
         params.append("name", req.body.name || "");
 
         const response = await axios.post(
-            "http://backend:5000/submit",
+            "http://56.228.33.142:5000/submit",
             params.toString(),
             { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
         );
