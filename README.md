@@ -1,5 +1,5 @@
 # CI-CD-Deployment
 
-![Image 1](<Screenshot 2025-09-13 155505.png>)
+![Image 1](<image.png>)
 
-![Image 2](<Screenshot 2025-09-13 155512.png>)
+![Image 2](<image copy.png>)
