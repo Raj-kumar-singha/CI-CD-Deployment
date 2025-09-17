@@ -4,7 +4,6 @@ app = Flask(__name__)
 
 @app.route("/submit", methods=["POST"])
 def submit():
-    # Try form first, then JSON as a fallback
     name = request.form.get("name")
     if not name:
         data = request.get_json(silent=True) or {}

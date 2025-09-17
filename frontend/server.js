@@ -7,7 +7,7 @@ const PORT = 3000;
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
-    res.send(`
+  res.send(`
     <h1>Raj Kumar Singha</h1>
     <form action="/submit" method="POST">
       <input type="text" name="name" placeholder="Enter your name"/>
@@ -17,22 +17,21 @@ app.get("/", (req, res) => {
 });
 
 app.post("/submit", async (req, res) => {
-    try {
-        // Encode as x-www-form-urlencoded so Flask sees request.form
-        const params = new URLSearchParams();
-        params.append("name", req.body.name || "");
+  try {
+    const params = new URLSearchParams();
+    params.append("name", req.body.name || "");
 
-        const response = await axios.post(
-            "http://56.228.33.142:5000/submit",
-            params.toString(),
-            { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-        );
+    // IMPORTANT: local call (same EC2)
+    const response = await axios.post(
+      "http://127.0.0.1:5000/submit",
+      params.toString(),
+      { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+    );
 
-        res.send(`Response from Flask: ${response.data}`);
-    } catch (err) {
-        res.status(500).send("Error: " + err.message);
-    }
+    res.send(`Response from Flask: ${response.data}`);
+  } catch (err) {
+    res.status(500).send("Error: " + err.message);
+  }
 });
 
-// Listen on all interfaces (important in containers)
 app.listen(PORT, "0.0.0.0", () => console.log(`Frontend running on ${PORT}`));
