@@ -1,17 +1,39 @@
-resource "aws_instance" "ci_cd_server" {
-  ami           = "ami-0c55b159cbfafe1f0" # Example Ubuntu AMI (change based on region)
-  instance_type = "t2.micro"
-  key_name      = var.key_name
+resource "aws_security_group" "web" {
+  name        = var.sg_name
+  description = "Allow SSH, frontend, backend, Jenkins"
 
-  vpc_security_group_ids = [aws_security_group.web.id]
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-  user_data = templatefile("${path.module}/user_data_single.tpl", {
-    backend_port  = 5000
-    frontend_port = 3000
-    jenkins_port  = 8080
-  })
+  ingress {
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-  tags = {
-    Name = "ci-cd-instance"
+  ingress {
+    from_port   = 5000
+    to_port     = 5000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
