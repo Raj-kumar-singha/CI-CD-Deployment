@@ -1,55 +1,38 @@
 pipeline {
-  agent any
+    agent any
 
-  environment {
-    PM2        = "/usr/bin/pm2"       // absolute paths avoid PATH issues
-    GUNICORN   = "/usr/bin/gunicorn"
-    FRONTEND   = "frontend"
-    BACKEND    = "backend"
-    FRONTEND_APP = "frontend-app"
-    BACKEND_APP  = "backend-app"
-    BIND       = "0.0.0.0:5000"
-  }
-
-  stages {
-    stage('Checkout') {
-      steps { checkout scm }
-    }
-
-    stage('Backend: install & run') {
-      steps {
-        dir("${BACKEND}") {
-          sh '''
-            python3 -m pip install --upgrade pip
-            [ -f requirements.txt ] && python3 -m pip install -r requirements.txt || true
-          '''
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Raj-kumar-singha/CI-CD-Deployment.git'
+            }
         }
-        sh '''
-          # start once, then reload forever after
-          if ${PM2} describe ${BACKEND_APP} > /dev/null; then
-            ${PM2} reload ${BACKEND_APP} --update-env
-          else
-            cd ${BACKEND}
-            ${PM2} start "${GUNICORN} -w 4 -b ${BIND} app:app" --name ${BACKEND_APP}
-          fi
-          ${PM2} save
-        '''
-      }
+
+        stage('Backend - Flask') {
+            steps {
+                dir('backend') {
+                    sh 'pip3 install -r requirements.txt'
+                    sh 'pm2 restart backend || pm2 start "gunicorn -w 4 -b 0.0.0.0:5000 app:app" --name backend'
+                }
+            }
+        }
+
+        stage('Frontend - Express') {
+            steps {
+                dir('frontend') {
+                    sh 'npm install'
+                    sh 'pm2 restart frontend || pm2 start server.js --name frontend'
+                }
+            }
+        }
     }
 
-    stage('Frontend: install & run') {
-      steps {
-        dir("${FRONTEND}") { sh 'npm ci || npm install' }
-        sh '''
-          if ${PM2} describe ${FRONTEND_APP} > /dev/null; then
-            ${PM2} reload ${FRONTEND_APP} --update-env
-          else
-            cd ${FRONTEND}
-            ${PM2} start server.js --name ${FRONTEND_APP}
-          fi
-          ${PM2} save
-        '''
-      }
+    post {
+        success {
+            echo "Deployment Successful ✅"
+        }
+        failure {
+            echo "Deployment Failed ❌"
+        }
     }
-  }
 }
